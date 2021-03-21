@@ -27,9 +27,11 @@ func main() {
 }
 
 func handleRequests() {
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter()
+	router.Use(CORS)
+	router.HandleFunc("/", authUser).Methods("POST")
 	router.HandleFunc("/", homePage)
-	router.HandleFunc("/auth", authUser).Methods("POST")
+	http.Handle("/", router)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
@@ -54,23 +56,41 @@ func authUser(w http.ResponseWriter, r *http.Request) {
 	hour, minute, _ := time.Now().UTC().Clock()
 	correctToken := fmt.Sprintf("%02d%02d", hour, minute)
 	if tokenString != correctToken {
-		log.Printf("Token incorrect")
-		w.WriteHeader(401)
+		log.Printf("Token incorrect\n")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 
 	if user.Username != User.Username {
 		log.Printf("Username incorrect")
-		w.WriteHeader(401)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	if user.Password != User.Password {
 		log.Printf("Password incorrect")
-		w.WriteHeader(401)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
+}
+
+// CORS Middleware
+func CORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set headers
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "*")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Next
+		next.ServeHTTP(w, r)
+	})
 }
