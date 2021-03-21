@@ -40,6 +40,15 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: homePage")
 }
 
+/* Tests for:
+- body parse error
+- incorrect token
+- missing token
+- incorrect username
+- incorrect password
+- correct information
+*/
+
 func authUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var user = User
