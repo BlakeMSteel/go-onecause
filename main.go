@@ -53,7 +53,6 @@ func authUser(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 	hour, minute, _ := time.Now().UTC().Clock()
 	correctToken := fmt.Sprintf("%02d%02d", hour, minute)
-	fmt.Printf("%s, %s\n", tokenString, correctToken)
 	if tokenString != correctToken {
 		log.Printf("Token incorrect")
 		w.WriteHeader(401)
@@ -73,7 +72,5 @@ func authUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-
-	json.NewEncoder(w).Encode(User)
+	w.WriteHeader(200)
 }
